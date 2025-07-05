@@ -19,5 +19,10 @@ export class User {
     type: String,
   })
   lastName: string;
+  @Prop({
+    required: true,
+    type: Number,
+  })
+  age: number;
 }
 export const UserSchema = SchemaFactory.createForClass(User);
