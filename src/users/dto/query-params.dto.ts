@@ -17,4 +17,14 @@ export class QueryParamsDto {
   @IsNumber()
   @Transform(({ value }) => Number(value))
   age?: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Transform(({ value }) => Math.max(Number(value), 1))
+  page: number = 1;
+
+  @IsOptional()
+  @IsNumber()
+  @Transform(({ value }) => Math.min(Number(value), 30))
+  take: number = 30;
 }

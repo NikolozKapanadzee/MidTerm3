@@ -50,7 +50,7 @@ export class UsersService implements OnModuleInit {
     };
   }
 
-  async findAll({ ageFrom, ageTo, fullName, age }: QueryParamsDto) {
+  async findAll({ ageFrom, ageTo, fullName, age, page, take }: QueryParamsDto) {
     const filter: any = {};
     if (fullName) {
       filter.fullName = { $regex: fullName, $options: 'i' };
@@ -58,6 +58,7 @@ export class UsersService implements OnModuleInit {
     if (age) {
       filter.age = age;
     }
+    // '$gte' ase ro vwerdi da mere vaseivebdi tavisit ashorebda frchxilebs arvici rato
     if (ageFrom) {
       filter.age = { ...filter.age, $gte: ageFrom };
     }
@@ -65,7 +66,10 @@ export class UsersService implements OnModuleInit {
       filter.age = { ...filter.age, $lte: ageTo };
     }
     console.log(filter);
-    return this.userModel.find(filter);
+    return this.userModel
+      .find(filter)
+      .skip((page - 1) * take)
+      .limit(take);
   }
   async findTotalUsers() {
     return await this.userModel.countDocuments();
