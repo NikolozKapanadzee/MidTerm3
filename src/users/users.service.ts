@@ -10,16 +10,17 @@ import { InjectModel } from '@nestjs/mongoose';
 import { User } from './schemas/user.schema';
 import { isValidObjectId, Model } from 'mongoose';
 import { faker } from '@faker-js/faker';
-
+import { QueryParamsDto } from './dto/query-params.dto';
 @Injectable()
 export class UsersService implements OnModuleInit {
   constructor(@InjectModel(User.name) private userModel: Model<User>) {}
   async onModuleInit() {
     const count = await this.userModel.countDocuments();
+    // await this.userModel.deleteMany();
     if (count === 0) {
       const dataToInsert: any = [];
-      for (let i = 0; i < 100_000; i++) {
-        const userName = faker.internet.userName();
+      for (let i = 0; i < 30_000; i++) {
+        const userName = faker.internet.username();
         dataToInsert.push({
           email: `${userName}_${i}@example.com`,
           age: faker.number.int({ min: 18, max: 100 }),
@@ -49,8 +50,25 @@ export class UsersService implements OnModuleInit {
     };
   }
 
-  async findAll() {
-    return this.userModel.find();
+  async findAll({ ageFrom, ageTo, fullName, age }: QueryParamsDto) {
+    const filter: any = {};
+    if (fullName) {
+      filter.fullName = { $regex: fullName, $options: 'i' };
+    }
+    if (age) {
+      filter.age = age;
+    }
+    if (ageFrom) {
+      filter.age = { ...filter.age, $gte: ageFrom };
+    }
+    if (ageTo) {
+      filter.age = { ...filter.age, $lte: ageTo };
+    }
+    console.log(filter);
+    return this.userModel.find(filter);
+  }
+  async findTotalUsers() {
+    return await this.userModel.countDocuments();
   }
 
   async findOne(id: string) {
