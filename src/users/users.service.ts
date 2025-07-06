@@ -2,16 +2,35 @@ import {
   BadRequestException,
   Injectable,
   NotFoundException,
+  OnModuleInit,
 } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { User } from './schemas/user.schema';
 import { isValidObjectId, Model } from 'mongoose';
+import { faker } from '@faker-js/faker';
 
 @Injectable()
-export class UsersService {
+export class UsersService implements OnModuleInit {
   constructor(@InjectModel(User.name) private userModel: Model<User>) {}
+  async onModuleInit() {
+    const count = await this.userModel.countDocuments();
+    if (count === 0) {
+      const dataToInsert: any = [];
+      for (let i = 0; i < 100_000; i++) {
+        const userName = faker.internet.userName();
+        dataToInsert.push({
+          email: `${userName}_${i}@example.com`,
+          age: faker.number.int({ min: 18, max: 100 }),
+          fullName: faker.book.author(),
+          lastName: faker.book.publisher(),
+        });
+      }
+      await this.userModel.insertMany(dataToInsert);
+      console.log('inserted successfully');
+    }
+  }
   async create(createUserDto: CreateUserDto) {
     const { email, fullName, lastName, age } = createUserDto;
     const existUser = await this.userModel.findOne({ email });

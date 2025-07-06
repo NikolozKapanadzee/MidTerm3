@@ -5,7 +5,7 @@ export class User {
   @Prop({
     required: true,
     lowercase: true,
-    unique: true,
+    // unique: true,
     type: String,
   })
   email: string;
